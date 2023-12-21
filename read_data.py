@@ -9,14 +9,25 @@ def spliter(string:str):
         return int(string)
 
 # read data from truecar.com
-for i in range(1, 333):
-    data = requests.get(f'https://www.truecar.com/used-cars-for-sale/listings/?page={i}')
-    soup = BeautifulSoup(data.text, 'html.parser')
-    
-    cards = soup.find('div', 'card-content')
-    top = cards.find('div', 'vehicle-card-top').find('div', 'truncate')
+def read_data():
+    for page in range(1, 333):
+        url = f'https://www.truecar.com/used-cars-for-sale/listings/?page={page}'
+        
+        data = requests.get(url)
+        soup = BeautifulSoup(data.text, 'html.parser')
+        
+        # find all car cards in one page
+        elements = soup.find_all('div', 'card-content')
+        
+        for card in elements:
+            # Separator top part of the card for car model and production year
+            top = card.find('div', 'vehicle-card-top').find('div', 'truncate')
 
-    year = int(top.find('span', 'vehicle-card-year').text)
-    car_name, model = top.find('span', 'truncate').text.split()
-    price = spliter(cards.find('div', 'vehicle-card-bottom-pricing').find('div', 'normal-case').text.split("$")[-1])
-    mile_age = spliter(cards.find('div', 'border-t').find('div', 'truncate').text.split()[0])
+            # production year
+            year = int(top.find('span', 'vehicle-card-year').text)
+            # car model
+            model = top.find('span', 'truncate').text
+            price = spliter(card.find('div', 'vehicle-card-bottom-pricing').find('div', 'normal-case').text.split("$")[-1])
+            mile_age = spliter(card.find('div', 'border-t').find('div', 'truncate').text.split()[0])
+
+            return model, year, mile_age, price
